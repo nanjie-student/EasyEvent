@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @DgsComponent
 @RequiredArgsConstructor
-public class eventDataFetcher {
+public class EventDataFetcher {
 
     private final EventEntityMapper eventEntityMapper;
     private final UserEntityMapper userEntityMapper;
