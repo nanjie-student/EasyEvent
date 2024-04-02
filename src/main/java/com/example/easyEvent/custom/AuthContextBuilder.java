@@ -39,7 +39,7 @@ public class AuthContextBuilder implements DgsCustomContextBuilderWithRequest {
         try {
             userID = TokenUtil.verifyToken(token);
         }catch(Exception ex){
-            authContext.setTokenInvalid(false);
+            authContext.setTokenInvalid(true);
             return authContext;
         }
         UserEntity userEntity = userEntityMapper.selectById(userID);

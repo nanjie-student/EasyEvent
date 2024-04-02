@@ -1,6 +1,7 @@
 package com.example.easyEvent.fetcher;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.easyEvent.custom.AuthContext;
 import com.example.easyEvent.entity.EventEntity;
 import com.example.easyEvent.entity.UserEntity;
 import com.example.easyEvent.mapper.EventEntityMapper;
@@ -8,6 +9,8 @@ import com.example.easyEvent.mapper.UserEntityMapper;
 import com.example.easyEvent.type.*;
 import com.example.easyEvent.util.TokenUtil;
 import com.netflix.graphql.dgs.*;
+import com.netflix.graphql.dgs.context.DgsContext;
+import graphql.schema.DataFetchingEnvironment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -29,7 +32,10 @@ public class UserDataFetcher {
         this.eventEntityMapper = eventEntityMapper;
     }
     @DgsQuery
-    public List<User> users(){
+    public List<User> users(DataFetchingEnvironment dfe){
+        //Only by authentication successful user can query user's events
+        AuthContext authContext = DgsContext.getCustomContext(dfe);
+        authContext.ensureAuthenticated();
         List<UserEntity> userEntityList = userEntityMapper.selectList(null);
         List<User> userList = userEntityList.stream()
                 .map(User::fromEntity)

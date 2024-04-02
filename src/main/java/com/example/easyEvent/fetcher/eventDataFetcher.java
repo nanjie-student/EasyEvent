@@ -1,6 +1,7 @@
 package com.example.easyEvent.fetcher;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.easyEvent.custom.AuthContext;
 import com.example.easyEvent.entity.EventEntity;
 import com.example.easyEvent.entity.UserEntity;
 import com.example.easyEvent.mapper.EventEntityMapper;
@@ -9,6 +10,8 @@ import com.example.easyEvent.type.Event;
 import com.example.easyEvent.type.EventInput;
 import com.example.easyEvent.type.User;
 import com.netflix.graphql.dgs.*;
+import com.netflix.graphql.dgs.context.DgsContext;
+import graphql.schema.DataFetchingEnvironment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,8 +38,12 @@ public class EventDataFetcher {
 
     }
     @DgsMutation
-    public Event createEvent(@InputArgument(name = "eventInput") EventInput input){
+    public Event createEvent(@InputArgument(name = "eventInput") EventInput input, DataFetchingEnvironment dfe){
+        //when user authentication successful then we should create events
+        AuthContext authContext = DgsContext.getCustomContext(dfe);
+        authContext.ensureAuthenticated();
         EventEntity newEventEntity = EventEntity.fromEventInput(input);
+        newEventEntity.setCreatorId(authContext.getUserEntity().getId());
         eventEntityMapper.insert(newEventEntity);
         Event newEvent = Event.fromEntity(newEventEntity);
         return newEvent;
