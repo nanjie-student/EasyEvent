@@ -20,7 +20,7 @@ public class Booking {
         booking.setUserId(bookingEntity.getUserId());
         booking.setEventId(bookingEntity.getEventId());
         booking.setCreatedAt(DateUtil.formatDateInISOString(bookingEntity.getCreatedAt()));
-        booking.setUpdatedAt(DateUtil.formatDateInISOString(bookingEntity.getUpdateAt()));
+        booking.setUpdatedAt(DateUtil.formatDateInISOString(bookingEntity.getUpdatedAt()));
         return booking;
 
 

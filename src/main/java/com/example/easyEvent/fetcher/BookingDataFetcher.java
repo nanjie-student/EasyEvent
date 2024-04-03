@@ -6,12 +6,11 @@ import com.example.easyEvent.entity.EventEntity;
 import com.example.easyEvent.entity.UserEntity;
 import com.example.easyEvent.mapper.BookingEntityMapper;
 import com.example.easyEvent.mapper.EventEntityMapper;
+import com.example.easyEvent.mapper.UserEntityMapper;
 import com.example.easyEvent.type.Booking;
 import com.example.easyEvent.type.Event;
-import com.netflix.graphql.dgs.DgsComponent;
-import com.netflix.graphql.dgs.DgsMutation;
-import com.netflix.graphql.dgs.DgsQuery;
-import com.netflix.graphql.dgs.InputArgument;
+import com.example.easyEvent.type.User;
+import com.netflix.graphql.dgs.*;
 import com.netflix.graphql.dgs.context.DgsContext;
 import graphql.schema.DataFetchingEnvironment;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +24,15 @@ import java.util.stream.Collectors;
 public class BookingDataFetcher {
     private final BookingEntityMapper bookingEntityMapper;
     private final EventEntityMapper eventEntityMapper;
+    private final UserEntityMapper userEntityMapper;
 
-    public BookingDataFetcher(BookingEntityMapper bookingEntityMapper, EventEntityMapper eventEntityMapper) {
+    //By constructor method inject mapper
+    public BookingDataFetcher(BookingEntityMapper bookingEntityMapper,
+                              EventEntityMapper eventEntityMapper,
+                              UserEntityMapper userEntityMapper) {
         this.bookingEntityMapper = bookingEntityMapper;
         this.eventEntityMapper = eventEntityMapper;
+        this.userEntityMapper = userEntityMapper;
     }
     @DgsQuery
     public List<Booking> bookings(){
@@ -76,5 +80,21 @@ public class BookingDataFetcher {
         Event event = Event.fromEntity(eventEntity);
         return event;
 
+    }
+    @DgsData(parentType = "Booking",field="user")
+    public User user(DgsDataFetchingEnvironment dfe){
+        //Firstly,reslover take the parentType 
+        Booking booking = dfe.getSource();
+        UserEntity userEntity = userEntityMapper.selectById(booking.getUserId());
+        User user = User.fromEntity(userEntity);
+        return user;
+
+    }
+    @DgsData(parentType = "Booking",field="event")
+    public Event event(DgsDataFetchingEnvironment dfe){
+        Booking booking = dfe.getSource();
+        EventEntity eventEntity = eventEntityMapper.selectById(booking.getEventId());
+        Event event = Event.fromEntity(eventEntity);
+        return event;
     }
 }
