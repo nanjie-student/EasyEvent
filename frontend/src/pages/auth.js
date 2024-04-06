@@ -1,14 +1,27 @@
 import React, {Component} from 'react';
-import './auth.css';
+import './Auth.css';
+import AuthContext from '../context/auth-context';
 
 
 class AuthPage extends Component{
+    state = {
+        isLogin: true,
+    };
+    //how to touch login/logout function
+    //import static authContext 
+    static contextType = AuthContext;
+
     constructor(props){
         super(props);
         this.emailEl = React.createRef();
         this.passwordEl = React.createRef();
 
     }
+    switchModeHandler = () =>{
+        this.setState((prevState) =>{
+            return {isLogin: !prevState.isLogin};
+        });
+    };
     submitHandle =(event) =>{
         event.preventDafault();
         const email = this.emailEl.current.value;
@@ -17,20 +30,39 @@ class AuthPage extends Component{
         if(email.trim().length === 0 || password.trim().length === 0){
             return;
         }
-        const requestBody ={
-            query: `
-                mutation {
-                    createUser(userInput : {
+
+        let requestBody = {
+            query:`
+                query {
+                    login(loginInput : {
                         email: "${email}",
                         password: "${password}"
                     }){
-                        id
-                        email
-                    }
+                        useId,
+                        token,
+                        tokenExpination
+                    
                 }
-            `,
-
+                `,
+        };
+        //not login use this method,register statusa,new user
+        if(!this.state.isLogin){
+            requestBody ={
+                query: `
+                    mutation {
+                        createUser(userInput : {
+                            email: "${email}",
+                            password: "${password}"
+                        }){
+                            id
+                            email
+                        }
+                    }
+                `,
+    
+            };
         }
+        
         console.log(email, password);
         //backend request
         fetch("http://localhost:8080/graphql",{
@@ -47,6 +79,14 @@ class AuthPage extends Component{
         })
         .then((resData) => {
             console.log(resData);
+            if(resData.data.login.token){
+                this.context.login(
+                    resData.data.login.token,
+                    resData.data.login.userId,
+                    resData.data.login.tokenExpiration
+                );
+            }
+            
         })
         .catch((err) =>{
             console.log(err);
@@ -66,7 +106,9 @@ class AuthPage extends Component{
                 </div>
                 <div className="form-actions">
                     <button type="submit">Submit</button>
-                    
+                    <button type= "button" onClick= {this.switchModeHandler}>
+                        Switch to {this.state.isLogin ? "sighup" :"login"}
+                    </button>
                 </div>
             </form>
         );
