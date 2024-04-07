@@ -44,27 +44,36 @@ class AuthPage extends Component{
                     
                 }
                 `,
+                variables: {
+                    email: email,
+                    password: password,
+                },
         };
         //not login use this method,register statusa,new user
         if(!this.state.isLogin){
             requestBody ={
                 query: `
-                    mutation {
+                    mutation CreateUser($email: String!,$password : String!){
                         createUser(userInput : {
-                            email: "${email}",
-                            password: "${password}"
+                            email: "$email",
+                            password: "$password"
                         }){
                             id
                             email
                         }
                     }
                 `,
+                variables: {
+                    email: email,
+                    password: password,
+                },
     
             };
         }
         
         console.log(email, password);
         //backend request
+        //GraphQL optimization
         fetch("http://localhost:8080/graphql",{
             method: "POST",
             body: JSON.stringify(requestBody),
